@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">BluetoothConnection</string>
+    <string-array name="mode_options">
+        <item>DateTime</item>
+        <item>Temperature</item>
+        <item>Custom String</item>
+    </string-array>
+</resources>
