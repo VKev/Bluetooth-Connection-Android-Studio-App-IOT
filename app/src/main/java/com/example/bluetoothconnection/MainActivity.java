@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.icu.util.Output;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -118,8 +119,11 @@ public class MainActivity extends AppCompatActivity {
                     // Do something with the datetime, e.g., display it in a Toast or log it
                     SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
                     String formattedDateTime = outputFormat.format(dateTime);
-                    textView.setText("Send successfully!");
-                    textView.setTextColor(Color.GREEN);
+                    boolean btsend = SendMessage("SetDate "+formattedDateTime);
+                    if(btsend) {
+                        textView.setText("Send successfully!");
+                        textView.setTextColor(Color.GREEN);
+                    }
 
                 } catch (Exception e) {
                     textView.setText("Wrong format!");
@@ -132,7 +136,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String customString = editCustomString.getText().toString();
-                customStringSuccess.setText("Send successfully!");
+                boolean btsend = SendMessage("SetCustomString "+customString);
+                if(btsend) {
+                    customStringSuccess.setText("Send successfully!");
+                }
             }
         });
 
@@ -157,7 +164,10 @@ public class MainActivity extends AppCompatActivity {
     private void handleModeConfirmation() {
         // Use the selectedMode variable as needed
         TextView modeSelectionResult = findViewById(R.id.textView_modeSuccess);
-        modeSelectionResult.setText("Selected Mode: " + selectedMode);
+        boolean btsend = SendMessage(selectedMode);
+        if(btsend) {
+            modeSelectionResult.setText(selectedMode);
+        }
     }
 
     private void addButtonToDeviceList(LinearLayout layout, BluetoothDevice device) {
@@ -176,15 +186,39 @@ public class MainActivity extends AppCompatActivity {
                         btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
                         btSocket.connect();
                         // Connection successful, handle further actions (e.g., data transfer)
-                        Log.d(TAG, "" + btSocket.isConnected());
+                        Log.d(TAG, "connected " + btSocket.isConnected());
+                        if(btSocket.isConnected()){
+                            TextView conn = (TextView) findViewById(R.id.textView3);
+                            conn.setText("Connected");
+                        }else{
+                            TextView conn = (TextView) findViewById(R.id.textView3);
+                            conn.setText("Not connected");
+                        }
                     } catch (Exception e) {
                         Log.e(TAG, "Failed to connect to device: " + e.getMessage());
                     }
                     count++;
                 }while (!btSocket.isConnected() && count <5);
+
+
+
             }
         });
         layout.addView(button);
+    }
+
+    public boolean SendMessage(String message){
+        try {
+            if(btSocket.isConnected()) {
+                OutputStream outputStream = btSocket.getOutputStream();
+                byte[] bytes = message.getBytes(); // Convert string to bytes
+                outputStream.write(bytes);
+                return true;
+            }
+        }catch (IOException e){
+
+        }
+        return false;
     }
 
     @Override
